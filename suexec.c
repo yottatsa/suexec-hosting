@@ -61,6 +61,10 @@
 #include <sys/resource.h>
 #endif
 
+#ifdef AP_SUEXEC_CGROUPS
+#include <libcgroup.h>
+#endif
+
 /*
  ***********************************************************************
  * There is no initgroups() in QNX, so I believe this is safe :-)
@@ -308,6 +312,9 @@ int main(int argc, char *argv[])
 #endif
 #ifdef AP_SUEXEC_SKIP_DOC_ROOT_CHECK
         fprintf(stderr, " -D AP_SUEXEC_SKIP_DOC_ROOT_CHECK\n");
+#endif
+#ifdef AP_SUEXEC_CGROUPS
+        fprintf(stderr, " -D AP_SUEXEC_CGROUPS\n");
 #endif
 #ifdef AP_DOC_ROOT
         fprintf(stderr, " -D AP_DOC_ROOT=\"%s\"\n", AP_DOC_ROOT);
@@ -621,6 +628,34 @@ if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
     }
     umask(AP_SUEXEC_UMASK);
 #endif /* AP_SUEXEC_UMASK */
+
+#ifdef AP_SUEXEC_CGROUPS
+	int ret = 0;
+	int flag_child = 0;
+	pid_t cgpid;
+
+	cgpid = getpid();
+
+	/* Initialize libcg */
+	ret = cgroup_init();
+	if (ret) {
+                log_err("libcgroup initialization failed: %s\n",
+			cgroup_strerror(ret));
+	} else {
+
+		flag_child |= CGROUP_DAEMON_UNCHANGE_CHILDREN; /* sticky */
+		ret = cgroup_register_unchanged_process(cgpid, flag_child);
+		if (ret) {
+			fprintf(stderr, "registration of process failed\n");
+		} else {
+			/* Change the cgroup by determining the rules based on uid */
+			ret = cgroup_change_cgroup_flags(uid, gid, (char *)&argv[3], cgpid, 0); /* should be const in function, but it is not, so we use typecast */
+			if (ret) {
+				log_err("cgroup change of group failed'n");
+			}
+		}
+	}
+#endif
 
 #ifdef AP_SUEXEC_RLIMIT
 #define RLIMIT_SET(resource, rlim_soft, rlim_hard) \
