@@ -2,7 +2,8 @@ CFLAGS = \
 	$(shell pkg-config --cflags apr-1 ) \
 	-I/usr/include/apache2 \
 	-I/usr/include \
-	-Wall
+	-Wall \
+	-DAP_SUEXEC_SKIP_DOC_ROOT_CHECK \
 
 all: suexec
 
