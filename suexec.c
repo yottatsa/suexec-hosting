@@ -316,6 +316,12 @@ int main(int argc, char *argv[])
 #ifdef AP_SUEXEC_CGROUPS
         fprintf(stderr, " -D AP_SUEXEC_CGROUPS\n");
 #endif
+#ifdef AP_SUEXEC_CGROUPS_FAST
+        fprintf(stderr, " -D AP_SUEXEC_CGROUPS_FAST\n");
+#endif
+#ifdef AP_SUEXEC_CGROUPS_FAST_PATH
+        fprintf(stderr, " -D AP_SUEXEC_CGROUPS_FAST_PATH=\"%s\"\n", AP_SUEXEC_CGROUPS_FAST_PATH);
+#endif
 #ifdef AP_DOC_ROOT
         fprintf(stderr, " -D AP_DOC_ROOT=\"%s\"\n", AP_DOC_ROOT);
 #endif
@@ -631,7 +637,13 @@ if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
 
 #ifdef AP_SUEXEC_CGROUPS
 	int ret = 0;
+#ifndef AP_SUEXEC_CGROUPS_FAST
 	int flag_child = 0;
+#endif
+#ifdef AP_SUEXEC_CGROUPS_FAST
+	char cgpath[AP_MAXPATH];
+	char * cgcontrollers[] = AP_SUEXEC_CGROUPS_FAST_CONTROLLERS;
+#endif
 	pid_t cgpid;
 
 	cgpid = getpid();
@@ -643,6 +655,7 @@ if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
 			cgroup_strerror(ret));
 	} else {
 
+#ifndef AP_SUEXEC_CGROUPS_FAST
 		flag_child |= CGROUP_DAEMON_UNCHANGE_CHILDREN; /* sticky */
 		ret = cgroup_register_unchanged_process(cgpid, flag_child);
 		if (ret) {
@@ -654,6 +667,15 @@ if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
 				log_err("cgroup change of group failed'n");
 			}
 		}
+#endif
+#ifdef AP_SUEXEC_CGROUPS_FAST
+		bzero(cgpath, AP_MAXPATH);
+		snprintf(cgpath, AP_MAXPATH-1, AP_SUEXEC_CGROUPS_FAST_PATH, actual_uname);
+		ret = cgroup_change_cgroup_path(cgpath, cgpid, cgcontrollers);
+		if (ret) {
+			log_err("cgroup change of group failed for (%s)\n", target_uname);
+		}
+#endif
 	}
 #endif
 
