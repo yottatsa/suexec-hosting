@@ -1,0 +1,16 @@
+Source: apache2-suexec-hosting
+Section: httpd
+Priority: extra
+Maintainer: Vladimir S Eremin <me@hidded.name>
+Build-Depends: cdbs, debhelper (>= 5), apache2-dev, libcgroup-dev
+Standards-Version: 3.8.3
+
+Package: apache2-suexec-hosting
+Architecture: any
+Depends: apache2, libcgroup1
+Provides: apache2-suexec
+Replaces: apache2-suexec, apache2-suexec-custom
+Conflicts: apache2-suexec, apache2-suexec-custom
+Description: Standard suexec program for Apache 2 mod_suexec
+ Provides the standard suexec helper program for mod_suexec. This version is
+ compiled for mass-hosting purposes.

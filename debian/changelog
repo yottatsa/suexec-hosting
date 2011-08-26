@@ -1,0 +1,37 @@
+apache2-suexec-hosting (1.1) unstable; urgency=low
+
+  * undone 1.0-4 patch
+  * PAM legacy code removed
+  * All patches committed to GIT
+
+ -- Vladimir S Eremin <me@yottatsa.name>  Fri, 26 Aug 2011 08:22:30 +0000
+
+apache2-suexec-hosting (1.0-5) unstable; urgency=low
+
+  * Writing messages into stderr when log is not available
+
+ -- Vladimir S Eremin <me@yottatsa.name>  Thu, 19 May 2011 07:25:57 +0000
+
+apache2-suexec-hosting (1.0-4) unstable; urgency=low
+
+  * Redirect all CGI output in devnull
+
+ -- Vladimir S Eremin <me@yottatsa.name>  Mon, 08 Nov 2010 10:46:47 +0000
+
+apache2-suexec-hosting (1.0-3) unstable; urgency=low
+
+  * Registration in cgroups is not mission-critical task anymore.
+
+ -- Vladimir S Eremin <me@hidded.name>  Thu, 10 Jun 2010 07:57:07 +0000
+
+apache2-suexec-hosting (1.0-2) unstable; urgency=low
+
+  * Use fast cgroups placement in replace of cgrules parsing.
+
+ -- Vladimir S Eremin <me@hidded.name>  Wed, 14 Apr 2010 04:29:39 +0000
+
+apache2-suexec-hosting (1.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Vladimir S Eremin <me@hidded.name>  Mon, 21 Dec 2009 14:11:37 +0500
