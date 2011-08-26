@@ -1,3 +1,4 @@
+/* vim:ft=c sts=4 */
 /* Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,6 +153,8 @@ static void err_output(int is_error, const char *fmt, va_list ap)
 
     if (!log) {
         if ((log = fopen(AP_LOG_EXEC, "a")) == NULL) {
+            fprintf(stderr, "suexec failure: ");
+            vfprintf(stderr, fmt, ap);
             fprintf(stderr, "suexec failure: could not open log file\n");
             perror("fopen");
             exit(1);
