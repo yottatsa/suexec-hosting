@@ -298,6 +298,9 @@ int main(int argc, char *argv[])
             || (! strcmp(AP_HTTPD_USER, pw->pw_name)))
 #endif /* _OSD_POSIX */
         ) {
+#ifdef AP_SUEXEC_EXEC_ROOT
+        fprintf(stderr, " -D AP_SUEXEC_EXEC_ROOT\n");
+#endif
 #ifdef AP_SUEXEC_SKIP_DOC_ROOT_CHECK
         fprintf(stderr, " -D AP_SUEXEC_SKIP_DOC_ROOT_CHECK\n");
 #endif
@@ -575,10 +578,17 @@ int main(int argc, char *argv[])
      * Error out if the target name/group is different from
      * the name/group of the cwd or the program.
      */
+#ifdef AP_SUEXEC_EXEC_ROOT
+if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
+    ((gid != dir_info.st_gid) && (dir_info.st_gid)) ||
+    ((uid != prg_info.st_uid) && (prg_info.st_uid)) ||
+    ((gid != prg_info.st_gid) && (prg_info.st_gid))) {
+#else
     if ((uid != dir_info.st_uid) ||
         (gid != dir_info.st_gid) ||
         (uid != prg_info.st_uid) ||
         (gid != prg_info.st_gid)) {
+#endif
         log_err("target uid/gid (%ld/%ld) mismatch "
                 "with directory (%ld/%ld) or program (%ld/%ld)\n",
                 uid, gid,
