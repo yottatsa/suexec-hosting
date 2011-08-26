@@ -107,6 +107,18 @@
 #endif
 
 /*
+ * AP_SUEXEC_CGROUP -- Place process in cgroups
+ *
+ */
+
+#ifdef AP_SUEXEC_CGROUPS_FAST
+#define AP_SUEXEC_CGROUPS
+#define AP_SUEXEC_CGROUPS_FAST_PATH "restricted/%s"
+#define AP_SUEXEC_CGROUPS_FAST_CONTROLLERS {"memory",}
+#endif
+
+
+/*
  * AP_SUEXEC_RLIMIT_*
  *
  */
