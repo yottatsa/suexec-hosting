@@ -4,6 +4,7 @@ CFLAGS = \
 	-I/usr/include \
 	-Wall \
 	-DAP_SUEXEC_SKIP_DOC_ROOT_CHECK \
+	-DAP_SUEXEC_EXEC_ROOT \
 
 all: suexec
 
