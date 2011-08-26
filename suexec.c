@@ -56,6 +56,11 @@
 #include <grp.h>
 #endif
 
+#ifdef AP_SUEXEC_RLIMIT
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
+
 /*
  ***********************************************************************
  * There is no initgroups() in QNX, so I believe this is safe :-)
@@ -616,6 +621,51 @@ if (((uid != dir_info.st_uid) && (dir_info.st_uid)) ||
     }
     umask(AP_SUEXEC_UMASK);
 #endif /* AP_SUEXEC_UMASK */
+
+#ifdef AP_SUEXEC_RLIMIT
+#define RLIMIT_SET(resource, rlim_soft, rlim_hard) \
+        if (getrlimit(resource, &rlim) == -1) \
+	{ \
+	    log_err("failed to getrlimit (%d): returned %d\n", resource, errno); \
+	    exit(122); \
+	} else { \
+	    if (rlim_soft != -1) \
+		rlim.rlim_cur = rlim_soft; \
+	    if (rlim_hard != -1) \
+		rlim.rlim_max = rlim_hard; \
+	    if (rlim.rlim_cur == RLIM_SAVED_CUR || rlim.rlim_cur > rlim.rlim_max) \
+		rlim.rlim_cur = rlim.rlim_max; \
+	    if (setrlimit(resource, &rlim) == -1) { \
+		log_err("failed to setrlimit (%d): returned %d\n", resource, errno); \
+		exit(122); \
+	    } \
+	}
+
+    {
+	struct rlimit rlim;
+
+	#ifdef AP_SUEXEC_RLIMIT_DATA
+	RLIMIT_SET(RLIMIT_DATA, AP_SUEXEC_RLIMIT_DATA_SOFT, AP_SUEXEC_RLIMIT_DATA_HARD)
+	#endif
+
+	#ifdef AP_SUEXEC_RLIMIT_MEMLOCK
+	RLIMIT_SET(RLIMIT_MEMLOCK, AP_SUEXEC_RLIMIT_MEMLOCK_SOFT, AP_SUEXEC_RLIMIT_MEMLOCK_HARD)
+	#endif
+
+	#ifdef AP_SUEXEC_RLIMIT_AS
+	RLIMIT_SET(RLIMIT_AS, AP_SUEXEC_RLIMIT_AS_SOFT, AP_SUEXEC_RLIMIT_AS_HARD)
+	#endif
+
+	#ifdef AP_SUEXEC_RLIMIT_NPROC
+	RLIMIT_SET(RLIMIT_NPROC, AP_SUEXEC_RLIMIT_NPROC_SOFT, AP_SUEXEC_RLIMIT_NPROC_HARD)
+	#endif
+
+	#ifdef AP_SUEXEC_RLIMIT_CPU
+	RLIMIT_SET(RLIMIT_CPU, AP_SUEXEC_RLIMIT_CPU_SOFT, AP_SUEXEC_RLIMIT_CPU_HARD)
+	#endif
+    }
+
+#endif /* SUEXEC_RLIMIT */
 
     /*
      * Be sure to close the log file so the CGI can't
