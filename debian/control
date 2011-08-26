@@ -1,9 +1,11 @@
 Source: apache2-suexec-hosting
 Section: httpd
 Priority: extra
-Maintainer: Vladimir S Eremin <me@hidded.name>
+Maintainer: Vladimir S Eremin <me@yottatsa.name>
 Build-Depends: cdbs, debhelper (>= 5), apache2-dev, libcgroup-dev
 Standards-Version: 3.8.3
+XS-Vcs-Browser: http://github.com/yottatsa/suexec-hosting/
+XS-Vcs-git: git://github.com/yottatsa/suexec-hosting.git
 
 Package: apache2-suexec-hosting
 Architecture: any

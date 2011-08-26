@@ -1,6 +1,9 @@
 Package contents description
 -----------------------------
 
+There is a set of patches over Apache 2 component `suexec`.
+It's distrbuted under same license, stated in `debian/copyright` file.
+
 The "master" branch contains all the features available.
 
 Branches described below should be considered as tags (development stages):
@@ -34,8 +37,8 @@ Options:
 
 - `AP_SUEXEC_CGROUPS_FAST` (hardcoded)
 - `AP_SUEXEC_CGROUPS` (cgrulesengd)
-- `AP_SUEXEC_CGROUPS_FAST_PATH` 
-- `AP_SUEXEC_CGROUPS_FAST_CONTROLLERS`
+- `AP_SUEXEC_CGROUPS_FAST_PATH` (must be specified in `suexec.h`)
+- `AP_SUEXEC_CGROUPS_FAST_CONTROLLERS` (must be specified in `suexec.h`)
 
 The exact set of features which should be compiled in the executable is tuned in the Makefile. Hardcoded values for cgroups are set in `suexec.h`.
 
