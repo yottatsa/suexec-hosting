@@ -46,6 +46,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#if APR_HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
@@ -53,29 +56,6 @@
 
 #ifdef HAVE_GRP_H
 #include <grp.h>
-#endif
-
-/*
- ***********************************************************************
- * There is no initgroups() in QNX, so I believe this is safe :-)
- * Use cc -osuexec -3 -O -mf -DQNX suexec.c to compile.
- *
- * May 17, 1997.
- * Igor N. Kovalenko -- infoh mail.wplus.net
- ***********************************************************************
- */
-
-#if defined(NEED_INITGROUPS)
-int initgroups(const char *name, gid_t basegid)
-{
-    /* QNX and MPE do not appear to support supplementary groups. */
-    return 0;
-}
-#endif
-
-#if defined(SUNOS4)
-extern char *sys_errlist[];
-#define strerror(x) sys_errlist[(x)]
 #endif
 
 #if defined(PATH_MAX)
@@ -101,6 +81,8 @@ static const char *const safe_env_lst[] =
     "AUTH_TYPE=",
     "CONTENT_LENGTH=",
     "CONTENT_TYPE=",
+    "CONTEXT_DOCUMENT_ROOT=",
+    "CONTEXT_PREFIX=",
     "DATE_GMT=",
     "DATE_LOCAL=",
     "DOCUMENT_NAME=",
@@ -119,13 +101,16 @@ static const char *const safe_env_lst[] =
     "REMOTE_IDENT=",
     "REMOTE_PORT=",
     "REMOTE_USER=",
+    "REDIRECT_ERROR_NOTES=",
     "REDIRECT_HANDLER=",
     "REDIRECT_QUERY_STRING=",
     "REDIRECT_REMOTE_USER=",
+    "REDIRECT_SCRIPT_FILENAME=",
     "REDIRECT_STATUS=",
     "REDIRECT_URL=",
     "REQUEST_METHOD=",
     "REQUEST_URI=",
+    "REQUEST_SCHEME=",
     "SCRIPT_FILENAME=",
     "SCRIPT_NAME=",
     "SCRIPT_URI=",
@@ -151,7 +136,11 @@ static void err_output(int is_error, const char *fmt, va_list ap)
     struct tm *lt;
 
     if (!log) {
+#if defined(_LARGEFILE64_SOURCE) && HAVE_FOPEN64
+        if ((log = fopen64(AP_LOG_EXEC, "a")) == NULL) {
+#else
         if ((log = fopen(AP_LOG_EXEC, "a")) == NULL) {
+#endif
             fprintf(stderr, "suexec failure: could not open log file\n");
             perror("fopen");
             exit(1);
@@ -255,7 +244,6 @@ int main(int argc, char *argv[])
     char *target_homedir;   /* target home directory     */
     char *actual_uname;     /* actual user name          */
     char *actual_gname;     /* actual group name         */
-    char *prog;             /* name of this program      */
     char *cmd;              /* command to be executed    */
     char cwd[AP_MAXPATH];   /* current working directory */
     char dwd[AP_MAXPATH];   /* docroot working directory */
@@ -269,7 +257,6 @@ int main(int argc, char *argv[])
      */
     clean_env();
 
-    prog = argv[0];
     /*
      * Check existence/validity of the UID of the user
      * running this program.  Error out if invalid.
@@ -597,18 +584,27 @@ int main(int argc, char *argv[])
     umask(AP_SUEXEC_UMASK);
 #endif /* AP_SUEXEC_UMASK */
 
-    /*
-     * Be sure to close the log file so the CGI can't
-     * mess with it.  If the exec fails, it will be reopened
-     * automatically when log_err is called.  Note that the log
-     * might not actually be open if AP_LOG_EXEC isn't defined.
-     * However, the "log" cell isn't ifdef'd so let's be defensive
-     * and assume someone might have done something with it
-     * outside an ifdef'd AP_LOG_EXEC block.
-     */
+    /* Be sure to close the log file so the CGI can't mess with it. */
     if (log != NULL) {
+#if APR_HAVE_FCNTL_H
+        /*
+         * ask fcntl(2) to set the FD_CLOEXEC flag on the log file,
+         * so it'll be automagically closed if the exec() call succeeds.
+         */
+        fflush(log);
+        setbuf(log, NULL);
+        if ((fcntl(fileno(log), F_SETFD, FD_CLOEXEC) == -1)) {
+            log_err("error: can't set close-on-exec flag");
+            exit(122);
+        }
+#else
+        /*
+         * In this case, exec() errors won't be logged because we have already
+         * dropped privileges and won't be able to reopen the log file.
+         */
         fclose(log);
         log = NULL;
+#endif
     }
 
     /*
