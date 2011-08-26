@@ -1,0 +1,44 @@
+Package contents description
+-----------------------------
+
+The "master" branch contains all the features available.
+
+Branches described below should be considered as tags (development stages):
+
+### loosen
+
+less security checks.
+
+Options:
+
+- `AP_SUEXEC_SKIP_DOC_ROOT_CHECK`: scripts which are executed on behalf of vhost owner may reside in arbitrary directory
+- `AP_SUEXEC_EXEC_ROOT`: allow execute of root-owned scripts on behalf of vhost owner
+
+
+### rlimit
+
+new features to limit the number of processes, memory and cputime
+
+Options:
+
+- `AP_SUEXEC_RLIMIT_MEMORY_META` Memory (in bytes), e.g. 268435456
+- `AP_SUEXEC_RLIMIT_NPROC_SOFT` Number of processes, e.g. 53
+- `AP_SUEXEC_RLIMIT_CPU_SOFT` CPU Time, e.g. 330
+
+
+### cgroups
+
+new features to execute processes in cgroup context unsing cgrulesengd or hardcoded values
+
+Options:
+
+- `AP_SUEXEC_CGROUPS_FAST` (hardcoded)
+- `AP_SUEXEC_CGROUPS` (cgrulesengd)
+- `AP_SUEXEC_CGROUPS_FAST_PATH` 
+- `AP_SUEXEC_CGROUPS_FAST_CONTROLLERS`
+
+The exact set of features which should be compiled in the executable is tuned in the Makefile. Hardcoded values for cgroups are set in `suexec.h`.
+
+It makes sense to build suexec as debian package, otherwise (if you want to compile things manually) the list of dependencies can be found in `debian/control` file.
+
+Happy restricting!
