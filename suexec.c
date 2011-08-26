@@ -261,7 +261,9 @@ int main(int argc, char *argv[])
     char *prog;             /* name of this program      */
     char *cmd;              /* command to be executed    */
     char cwd[AP_MAXPATH];   /* current working directory */
+#ifndef AP_SUEXEC_SKIP_DOC_ROOT_CHECK
     char dwd[AP_MAXPATH];   /* docroot working directory */
+#endif
     struct passwd *pw;      /* password entry holder     */
     struct group *gr;       /* group entry holder        */
     struct stat dir_info;   /* directory info holder     */
@@ -296,6 +298,9 @@ int main(int argc, char *argv[])
             || (! strcmp(AP_HTTPD_USER, pw->pw_name)))
 #endif /* _OSD_POSIX */
         ) {
+#ifdef AP_SUEXEC_SKIP_DOC_ROOT_CHECK
+        fprintf(stderr, " -D AP_SUEXEC_SKIP_DOC_ROOT_CHECK\n");
+#endif
 #ifdef AP_DOC_ROOT
         fprintf(stderr, " -D AP_DOC_ROOT=\"%s\"\n", AP_DOC_ROOT);
 #endif
@@ -501,6 +506,7 @@ int main(int argc, char *argv[])
         exit(111);
     }
 
+#ifndef AP_SUEXEC_SKIP_DOC_ROOT_CHECK
     if (userdir) {
         if (((chdir(target_homedir)) != 0) ||
             ((chdir(AP_USERDIR_SUFFIX)) != 0) ||
@@ -523,6 +529,7 @@ int main(int argc, char *argv[])
         log_err("command not in docroot (%s/%s)\n", cwd, cmd);
         exit(114);
     }
+#endif
 
     /*
      * Stat the cwd and verify it is a directory, or error out.
